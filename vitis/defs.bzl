@@ -10,16 +10,16 @@ HlsFileInfo = provider(
 def _vitis_hls_files_aspect_impl(target, ctx):
     """Filter out the vitis header deps."""
     files = []
-    for f in target[CcInfo].compilation_context.headers.to_list():
-        if "vitis/v" not in f.dirname:
-            files.append(f)
+
+    for f in target[CcInfo].compilation_context.direct_headers:
+        files.append(f)
 
     if hasattr(ctx.rule.attr, "srcs"):
         for src in ctx.rule.attr.srcs:
             for f in src.files.to_list():
                 if f not in files and "vitis/v" not in f.dirname:
                     files.append(f)
-    
+
     if hasattr(ctx.rule.attr, "deps"):
         for dep in ctx.rule.attr.deps:
             files = files + dep[HlsFileInfo].files
@@ -36,8 +36,8 @@ def _vitis_generate_impl(ctx):
     cflags = "-D__SYNTHESIS__=1 --std=c++17"
     for dep in ctx.attr.deps:
         for file in dep[HlsFileInfo].files:
-            if file.root.path != "":
-                cflags += " -I" + file.root.path
+            external_path = "/".join([file.root.path, file.owner.workspace_root]) if file.root.path else file.owner.workspace_root
+            cflags += " -I" + external_path
 
     source_file_str = ""
     for dep in ctx.attr.deps:
