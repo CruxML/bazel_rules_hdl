@@ -37,6 +37,7 @@ def _vitis_generate_impl(ctx):
     for dep in ctx.attr.deps:
         for file in dep[HlsFileInfo].files:
             external_path = "/".join([file.root.path, file.owner.workspace_root]) if file.root.path else file.owner.workspace_root
+            print(external_path)
             cflags += " -I" + external_path
 
     source_file_str = ""
