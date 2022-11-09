@@ -11,8 +11,9 @@ def _vitis_hls_files_aspect_impl(target, ctx):
     """Filter out the vitis header deps."""
     files = []
 
-    for f in target[CcInfo].compilation_context.direct_headers:
-        files.append(f)
+    for f in target[CcInfo].compilation_context.headers.to_list():
+        if "vitis/v" not in f.dirname:
+            files.append(f)
 
     if hasattr(ctx.rule.attr, "srcs"):
         for src in ctx.rule.attr.srcs:
@@ -37,7 +38,6 @@ def _vitis_generate_impl(ctx):
     for dep in ctx.attr.deps:
         for file in dep[HlsFileInfo].files:
             external_path = "/".join([file.root.path, file.owner.workspace_root]) if file.root.path else file.owner.workspace_root
-            print(external_path)
             cflags += " -I" + external_path
 
     source_file_str = ""

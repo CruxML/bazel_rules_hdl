@@ -1,5 +1,21 @@
 load("//vitis:defs.bzl", "vitis_generate")
 
+# This is to test the path of generated headers.
+genrule(
+  name = "consts",
+  cmd_bash = "touch $(OUTS)",
+  outs = [
+    "consts.h",
+  ],
+)
+
+cc_library(
+    name = "consts_cc",
+    srcs = [
+        "consts.h",
+    ],
+)
+
 cc_library(
     name = "hls_adder",
     srcs = [
@@ -9,6 +25,7 @@ cc_library(
         "hls_adder.h",
     ],
     deps = [
+        "consts_cc",
         "@rules_hdl//vitis:v2021_2_cc",
     ],
 )

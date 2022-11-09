@@ -9,6 +9,7 @@
 #endif
 #endif
 
+#include "vitis/tests/consts.h"
 namespace vitis {
 
 typedef ap_fixed<16, 9> fixed;
