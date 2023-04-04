@@ -34,7 +34,10 @@ vitis_hls_files_aspect = aspect(
 
 def _vitis_generate_impl(ctx):
     all_files = []
-    cflags = "-D__SYNTHESIS__=1"
+    if ctx.attr.use_vivado_hls:
+        cflags = "-D__SYNTHESIS__=1 --std=c++11"
+    else:
+        cflags = "-D__SYNTHESIS__=1 --std=c++17"
     for dep in ctx.attr.deps:
         for file in dep[HlsFileInfo].files:
             external_path = "/".join([file.root.path, file.owner.workspace_root]) if file.root.path else file.owner.workspace_root
@@ -66,10 +69,8 @@ def _vitis_generate_impl(ctx):
     vitis_command = "source " + ctx.file.xilinx_env.path + " && "
     if ctx.attr.use_vivado_hls:
         vitis_command += "vivado_hls " + vitis_tcl.path
-        cflags += " --std=c++11"
     else:
         vitis_command += "vitis_hls " + vitis_tcl.path
-        cflags += " --std=c++17"
     vitis_command += " -l " + vitis_log.path
     vitis_command += " && tar -czvf " + ctx.outputs.out.path + " -C "
     vitis_command += ctx.label.name + "/sol1/impl/verilog ."
