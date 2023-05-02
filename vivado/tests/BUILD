@@ -2,10 +2,10 @@ load("//verilog:providers.bzl", "verilog_library")
 load("//verilator:defs.bzl", "verilator_cc_library")
 load(
     "//vivado:defs.bzl",
-    "vivado_flow",
-    "xsim_test",
     "vivado_create_ip",
     "vivado_create_project",
+    "vivado_flow",
+    "xsim_test",
 )
 
 verilog_library(
@@ -69,21 +69,21 @@ vivado_flow(
 
 py_binary(
     name = "gen_values",
-    srcs = ["gen_values.py"]
+    srcs = ["gen_values.py"],
 )
 
 genrule(
     name = "test_mem",
     outs = ["test.mem"],
-    tools = [":gen_values"],
     cmd = "$(location :gen_values) > $(OUTS)",
+    tools = [":gen_values"],
 )
 
 verilog_library(
     name = "weights_replay",
     srcs = [
-        "weights_replay.sv",
         "test.mem",
+        "weights_replay.sv",
     ],
 )
 
@@ -96,7 +96,7 @@ verilator_cc_library(
 cc_test(
     name = "weights_replay_test",
     srcs = ["weights_replay_test.cc"],
-    data =[
+    data = [
         "test.mem",
     ],
     deps = [
@@ -115,37 +115,37 @@ verilog_library(
 
 vivado_create_ip(
     name = "weights_replay_ip",
+    encrypt = True,
+    ip_library = "test",
+    ip_vendor = "test_vendor",
+    ip_version = "0.1",
     module = ":weights_replay",
     module_top = "weights_replay",
     part_number = "xczu28dr-ffvg1517-2-e",
-    ip_version = "0.1",
-    ip_library = "test",
-    ip_vendor = "test_vendor",
     tags = ["manual"],
     xilinx_env = ":xilinx_env.sh",
 )
 
 vivado_flow(
     name = "weights_replay_vivado",
-    module = ":weights_replay_top",
-    module_top = "weights_replay_top",
-    part_number = "xczu28dr-ffvg1517-2-e",
     ip_blocks = [
         ":weights_replay_ip",
     ],
+    module = ":weights_replay_top",
+    module_top = "weights_replay_top",
+    part_number = "xczu28dr-ffvg1517-2-e",
     tags = ["manual"],
     xilinx_env = ":xilinx_env.sh",
 )
 
 vivado_create_project(
     name = "weights_replay_project",
-    module = ":weights_replay_top",
-    module_top = "weights_replay_top",
-    part_number = "xczu28dr-ffvg1517-2-e",
     ip_blocks = [
         ":weights_replay_ip",
     ],
+    module = ":weights_replay_top",
+    module_top = "weights_replay_top",
+    part_number = "xczu28dr-ffvg1517-2-e",
     tags = ["manual"],
     xilinx_env = ":xilinx_env.sh",
 )
-
