@@ -3,7 +3,7 @@
 load("//verilog:providers.bzl", "VerilogInfo")
 load("//vivado:providers.bzl", "VivadoIPBlockInfo", "VivadoPlacementCheckpointInfo", "VivadoRoutingCheckpointInfo", "VivadoSynthCheckpointInfo")
 
-def run_tcl_template(ctx, template, substitutions, xilinx_env, input_files, output_files):
+def run_tcl_template(ctx, template, substitutions, xilinx_env, input_files, output_files, post_processing_command = ""):
     """Runs a tcl template in vivado.
 
     Args:
@@ -30,7 +30,8 @@ def run_tcl_template(ctx, template, substitutions, xilinx_env, input_files, outp
     vivado_command = "source " + xilinx_env.path + " && "
     vivado_command += "vivado -mode batch -source " + vivado_tcl.path
     vivado_command += " -log " + vivado_log.path
-    vivado_command += " -journal " + vivado_journal.path
+    vivado_command += " -journal " + vivado_journal.path + "; "
+    vivado_command += post_processing_command
 
     outputs = output_files + [vivado_log, vivado_journal]
 
@@ -787,85 +788,64 @@ xsim_test = rule(
     },
 )
 
-def generate_writable_file_load_tcl(ctx, encrypt):
-    """Generate the strings needed for tcl with file locations in a writable dir.
-
-    Look at all the sources for a verilog module and make the needed commands
-    to get xilinx tools to load all the files needed.
-
-    Args:
-      ctx: The context
-      encrypt: If these sources are going to be encrypted.
-
-    Returns:
-      all_files: All file objects that the module depends on.
-      hdl_source_content: A string to load any hdl files in xilinx tools.
-      constraints_content: A string to load any constraints in xilinx tools.
-      tcl_content: A string to load any other tcl in xilinx tools.
-    """
-    transitive_srcs = depset([], transitive = [ctx.attr.module[VerilogInfo].dag])
-    all_srcs = [verilog_info_struct.srcs for verilog_info_struct in transitive_srcs.to_list()]
-    all_files = [src for sub_tuple in all_srcs for src in sub_tuple]
-
-    # As encrypt is done in place, we need to create another file to
-    # write to during the command.
-    if encrypt:
-        index = 0
-        writable_files = []
-        for file in all_files:
-            # Obscure the filesnames.
-            if file.extension in ["v", "sv", "vhd", "vhdl"]:
-                output_filename = "encrypted_{}.{}".format(index, file.extension)
-            else:
-                output_filename = "data_{}.{}".format(index, file.extension)
-            index += 1
-            writable_files = writable_files + [ctx.actions.declare_file(output_filename)]
-    else:
-        writable_files = all_files
-
-    hdl_source_content, constraints_content, tcl_content = get_content_from_files(writable_files)
-
-    return [
-        all_files,
-        writable_files,
-        hdl_source_content,
-        constraints_content,
-        tcl_content,
-    ]
-
-def generate_encrypt_tcl(all_files, keyfile_path):
+def generate_encrypt_tcl(ctx, all_files, keyfile_path, ip_dir_src):
     """Generate the commands to encrypt all sources.
 
     Args:
+      ctx: The context
       all_files: All files to encrypt
       keyfile_path: Path to the key file used to encrypt.
+      ip_dir_src: The location of ip source directory.
 
     Returns:
       encrypt_content: A string to encypt all sources.
+      encrypted_files: The output files to be encrypted.
+      post_processing_command: A command to fix up the ip sources.
     """
     encrypt_content = ""
+    post_processing_command = ""
+    encrypted_files = []
     for file in all_files:
         if file.extension in ["v", "sv"]:
-            encrypt_content += "encrypt -key {} -lang verilog {}\n".format(keyfile_path, file.path)
+            language = "verilog"
         elif file.extension in ["vhd", "vhdl"]:
-            encrypt_content += "encrypt -key {} -lang vhdl {}\n".format(keyfile_path, file.path)
+            language = "vhdl"
+        else:
+            continue
+        enc_extension = ".enc.{}".format(file.extension)
+        enc_filename = "{}{}".format(file.basename.split(".")[0], enc_extension)
+        encrypt_content += "encrypt -key {} -lang {} -ext {} {}\n".format(keyfile_path, language, enc_extension, file.path)
+        enc_file = ctx.actions.declare_file(enc_filename)
+        encrypted_files.append(enc_file)
+        source_file = "{}/{}".format(file.dirname, enc_file.basename)
+        post_processing_command += "cp {} {}; ".format(source_file, enc_file.path)
+        post_processing_command += "cp {} {}/{}; ".format(source_file, ip_dir_src, file.basename)
 
     return [
         encrypt_content,
+        encrypted_files,
+        post_processing_command,
     ]
 
 def _vivado_create_ip_impl(ctx):
-    all_files, writable_files, hdl_source_content, constraints_content, tcl_content = generate_writable_file_load_tcl(ctx, ctx.attr.encrypt)
+    all_files, hdl_source_content, constraints_content, tcl_content = generate_file_load_tcl(ctx.attr.module)
 
     xci_name = ctx.label.name
     ip_dir = ctx.actions.declare_directory(ctx.label.name)
 
-    outputs = [ip_dir] + writable_files
+    outputs = [ip_dir]
 
+    post_processing_command = ""
+    encrypt_content = ""
+    ip_src_dir = "{}/src/".format(ip_dir.path)
     if ctx.attr.encrypt:
-        encrypt_content = generate_encrypt_tcl(writable_files, ctx.file._keyfile.path)[0]
-    else:
-        encrypt_content = ""
+        encrypt_content, encrypted_files, post_processing_command = generate_encrypt_tcl(
+            ctx,
+            all_files,
+            ctx.file._keyfile.path,
+            ip_src_dir,
+        )
+        outputs += encrypted_files
 
     substitutions = {
         "{{PART_NUMBER}}": ctx.attr.part_number,
@@ -883,39 +863,18 @@ def _vivado_create_ip_impl(ctx):
         "{{XCI_NAME}}": xci_name,
     }
 
-    template = ctx.file._create_ip_block_template
-    xilinx_env = ctx.file.xilinx_env
-
-    vivado_tcl = ctx.actions.declare_file("{}_run_vivado.tcl".format(ctx.label.name))
-    vivado_log = ctx.actions.declare_file("{}.log".format(ctx.label.name))
-    vivado_journal = ctx.actions.declare_file("{}.jou".format(ctx.label.name))
-
-    ctx.actions.expand_template(
-        template = template,
-        output = vivado_tcl,
-        substitutions = substitutions,
-    )
-
-    vivado_command = ""
-    for file_in, file_out in zip(all_files, writable_files):
-        vivado_command += "cp {} {};\n".format(file_in.path, file_out.path)
-    vivado_command += "source " + xilinx_env.path + " && "
-    vivado_command += "vivado -mode batch -source " + vivado_tcl.path
-    vivado_command += " -log " + vivado_log.path
-    vivado_command += " -journal " + vivado_journal.path
-
-    outputs = outputs + [vivado_log, vivado_journal]
-    input_files = all_files + [ctx.file._keyfile, vivado_tcl, xilinx_env]
-
-    ctx.actions.run_shell(
-        outputs = outputs,
-        inputs = input_files + [vivado_tcl, xilinx_env],
-        progress_message = "Running on vivado: {}".format(ctx.label.name),
-        command = vivado_command,
+    ip_block_outputs = run_tcl_template(
+        ctx,
+        ctx.file._create_ip_block_template,
+        substitutions,
+        ctx.file.xilinx_env,
+        all_files + [ctx.file._keyfile],
+        outputs,
+        post_processing_command,
     )
 
     return [
-        DefaultInfo(files = depset(outputs)),
+        ip_block_outputs[0],
         VivadoIPBlockInfo(repo = ip_dir),
     ]
 
