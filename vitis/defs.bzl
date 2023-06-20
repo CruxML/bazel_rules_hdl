@@ -78,14 +78,6 @@ def _vitis_generate_impl(ctx):
     args.append(ctx.file.xilinx_env.path)
     if ctx.attr.use_vivado_hls:
         args.append("--use_vivado_hls")
-    vitis_command = "source " + ctx.file.xilinx_env.path + " && "
-    if ctx.attr.use_vivado_hls:
-        vitis_command += "vivado_hls " + vitis_tcl.path
-    else:
-        vitis_command += "vitis_hls " + vitis_tcl.path
-    vitis_command += " -l " + vitis_log.path
-    vitis_command += " && tar -czvf " + ctx.outputs.out.path + " -C "
-    vitis_command += ctx.label.name + "/sol1/impl/verilog ."
 
     outputs = [vitis_log, ctx.outputs.out]
 
