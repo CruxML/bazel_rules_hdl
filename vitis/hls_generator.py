@@ -84,7 +84,6 @@ def replace_module_names(verilog_files, verilog_files_dir, top_name):
     for verilog_file in verilog_files:
         full_path = os.path.join(verilog_files_dir, verilog_file)
         with open(full_path, "r") as f:
-            print(full_path)
             data_to_write[full_path] = f.readlines()
             for line in data_to_write[full_path]:
                 module_name = module_pattern.findall(line)
@@ -98,7 +97,7 @@ def replace_module_names(verilog_files, verilog_files_dir, top_name):
         for i in range(len(this_data)):
             for module_name_to_change in module_names_to_change:
                 this_data[i] = re.sub(
-                    module_name_to_change,
+                    r"\b{module_name}\b".format(module_name=module_name_to_change),
                     f"{module_name_to_change}_{top_name}",
                     this_data[i],
                 )

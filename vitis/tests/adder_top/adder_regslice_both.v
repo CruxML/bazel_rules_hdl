@@ -118,7 +118,7 @@ assign apdone_blk = ((B_V_data_1_state == 2'd3 && ack_out == 1'b0) | (B_V_data_1
 
 endmodule // both
 
-module adder_regslice_both_adder_w1
+module adder_regslice_both_w1_adder
 #(parameter 
     DataWidth=1
 )(
