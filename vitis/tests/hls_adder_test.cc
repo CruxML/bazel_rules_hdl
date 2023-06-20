@@ -8,19 +8,23 @@ namespace {
 class HlsAdderTest : public testing::Test {};
 
 TEST_F(HlsAdderTest, one_plus_one) {
-  fixed a = 1;
-  fixed b = 1;
-  fixed c;
+  hls::stream<fixed> a;
+  hls::stream<fixed> b;
+  hls::stream<fixed> c;
+  a.write(1);
+  b.write(1);
   adder(a, b, c);
-  EXPECT_EQ(c, 2);
+  EXPECT_EQ(c.read(), 2);
 }
 
 TEST_F(HlsAdderTest, quarter_plus_quarter) {
-  fixed a = 0.25;
-  fixed b = 0.25;
-  fixed c;
+  hls::stream<fixed> a;
+  hls::stream<fixed> b;
+  hls::stream<fixed> c;
+  a.write(0.25);
+  b.write(0.25);
   adder(a, b, c);
-  EXPECT_EQ(c, 0.5);
+  EXPECT_EQ(c.read(), 0.5);
 }
 
 }  // namespace
