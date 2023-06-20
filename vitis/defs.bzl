@@ -65,7 +65,19 @@ def _vitis_generate_impl(ctx):
         output = vitis_tcl,
         substitutions = substitutions,
     )
-
+    args = []
+    args.append("--vitis_tcl")
+    args.append(vitis_tcl.path)
+    args.append("--vitis_log")
+    args.append(vitis_log.path)
+    args.append("--outputs")
+    args.append(ctx.outputs.out.path)
+    args.append("--label")
+    args.append(ctx.label.name)
+    args.append("--xilinx_env")
+    args.append(ctx.file.xilinx_env.path)
+    if ctx.attr.use_vivado_hls:
+        args.append("--use_vivado_hls")
     vitis_command = "source " + ctx.file.xilinx_env.path + " && "
     if ctx.attr.use_vivado_hls:
         vitis_command += "vivado_hls " + vitis_tcl.path
@@ -82,11 +94,12 @@ def _vitis_generate_impl(ctx):
     else:
         progress_message = "Running with vitis_hls: {}".format(ctx.label.name)
 
-    ctx.actions.run_shell(
+    ctx.actions.run(
         outputs = outputs,
         inputs = all_files + [vitis_tcl, ctx.file.xilinx_env],
+        arguments = args,
         progress_message = progress_message,
-        command = vitis_command,
+        executable = ctx.executable._run_hls_gen,
     )
 
     return [
@@ -106,6 +119,12 @@ vitis_generate = rule(
             doc = "The tcl template to run with vitis.",
             default = "@rules_hdl//vitis:vitis_generate.tcl.template",
             allow_single_file = [".template"],
+        ),
+        "_run_hls_gen": attr.label(
+            doc = "Tool used to run hls generator.",
+            executable = True,
+            cfg = "exec",
+            default = ":hls_generator",
         ),
         "xilinx_env": attr.label(
             doc = "Environment variables for xilinx tools.",

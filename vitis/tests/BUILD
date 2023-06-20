@@ -1,4 +1,6 @@
 load("//vitis:defs.bzl", "vitis_generate")
+load("//verilog:providers.bzl", "verilog_library")
+load("//verilator:defs.bzl", "verilator_cc_library")
 
 # This is to test the path of generated headers.
 genrule(
@@ -87,4 +89,37 @@ vitis_generate(
     use_vivado_hls = True,
     xilinx_env = ":xilinx_env_vivado.sh",
     deps = [":hls_adder_vivado"],
+)
+
+verilog_library(
+    name = "adder_top",
+    srcs = glob(["adder_top/*"]),
+    visibility = ["//:__subpackages__"],
+)
+
+verilator_cc_library(
+    name = "adder_verilator",
+    module = "adder_top",
+    module_top = "adder",
+    vopts = [
+        # Ignore the delay time warning.
+        "-Wno-STMTDLY",
+        # Ignore the bit width mistmatch warning.
+        "-Wno-WIDTH",
+        # Ignore the unused signal warning.
+        "-Wno-UNUSED",
+    ],
+)
+
+cc_test(
+    name = "adder_verilator_test",
+    srcs = [
+        "adder_verilator_test.cc",
+    ],
+    deps = [
+        "adder_verilator",
+        "hls_adder",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
 )
