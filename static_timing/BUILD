@@ -1,5 +1,4 @@
-#!/usr/bin/env bash
-# Copyright 2020 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,16 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Wrapper around vvp binary. Adds the path to the dependencies to
-# the command line of vvp.
+# Static timing tool package.
 
-set -eu
-
-dir=$(dirname $(find . -name vvp-bin | head -n 1))
-
-if [[ ! -d "$dir" ]]; then
-  echo "Unable to find dependencies (looking under $dir)." 1>&2
-  exit 1
-fi
-
-exec "$dir/vvp-bin" -M"$dir" "$@"
+exports_files(["sta.tcl"])

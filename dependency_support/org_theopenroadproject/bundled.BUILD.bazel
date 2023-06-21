@@ -1449,6 +1449,7 @@ tcl_wrap_cc(
     srcs = [
         ":sta_swig_files",
     ],
+    namespace_prefix = "sta",
     root_swig_src = "src/sta/app/StaApp.i",
     swig_includes = [
         "src/sta/dcalc",
@@ -1518,6 +1519,7 @@ cc_binary(
         ":opensta_lib",
         "@tk_tcl//:tcl",
     ],
+    visibility = ["//visibility:public"],
 )
 
 cc_library(

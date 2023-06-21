@@ -1,9 +1,26 @@
-diff --git BUILD.boost BUILD.boost
-index e23893b..1e70e11 100644
---- BUILD.boost
-+++ BUILD.boost
-@@ -1874,6 +1874,7 @@ boost_library(
-         ":lexical_cast",
+diff --git boost.BUILD boost.BUILD
+index e5d0b60..bade47f 100644
+--- boost.BUILD
++++ boost.BUILD
+@@ -1908,13 +1908,13 @@ boost_library(
+     exclude_src = ["libs/stacktrace/src/*.cpp"],
+     linkopts = select({
+         ":linux_ppc": [
+-            "-lbacktrace -ldl",
++            "-ldl",
+         ],
+         ":linux_x86_64": [
+-            "-lbacktrace -ldl",
++            "-ldl",
+         ],
+         ":linux_aarch64": [
+-            "-lbacktrace -ldl",
++            "-ldl",
+         ],
+         "//conditions:default": [],
+     }),
+@@ -1927,6 +1927,7 @@ boost_library(
+         ":predef",
          ":static_assert",
          ":type_traits",
 +        "@com_github_libbacktrace//:libbacktrace",
