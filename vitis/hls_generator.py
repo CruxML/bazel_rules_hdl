@@ -57,6 +57,12 @@ def parse_args():
         help="The path to the xilinx_env.",
     )
     parser.add_argument(
+        "--file_location",
+        type=str,
+        required=False,
+        help="The path for the files to be saved.",
+    )
+    parser.add_argument(
         "--use_vivado_hls",
         action="store_true",
         help="If use vivado hls",
@@ -116,6 +122,34 @@ def replace_module_names(verilog_files, verilog_files_dir, top_name):
                 f.write(line)
 
 
+def fix_file_path(verilog_files, verilog_files_dir, file_path):
+    readmemh_pattern = re.compile(r"(?<=\$readmemh\(\"\.\/)(.*)(?=\);)", re.IGNORECASE)
+    for verilog_file in verilog_files:
+        data_to_read = []
+        data_to_write = []
+        full_path = os.path.join(verilog_files_dir, verilog_file)
+        with open(full_path, "r") as f:
+            data_to_read = f.readlines()
+            for line in data_to_read:
+                file_and_variable = readmemh_pattern.findall(line)
+                if file_and_variable:
+                    data_to_write.append("`ifdef __SYNTHESIS__\n")
+                    file, variable = file_and_variable[0].split('", ')
+                    data_to_write.append(line)
+                    data_to_write.append("`else\n")
+                    file_abs_path = os.path.join(file_path, file)
+                    data_to_write.append(
+                        f'    $readmemh("{file_abs_path}", {variable});\n'
+                    )
+                    data_to_write.append("`endif\n")
+
+                else:
+                    data_to_write.append(line)
+        with open(full_path, "w") as f:
+            for line in data_to_write:
+                f.write(line)
+
+
 def main():
     args = parse_args()
     # TODO(cruxml-bopeng): Move this to utils_logging.
@@ -140,6 +174,8 @@ def main():
         if verilog_file_include_dats.endswith(".v"):
             verilog_files.append(verilog_file_include_dats)
     replace_module_names(verilog_files, verilog_files_dir, args.top_func)
+    if args.file_location:
+        fix_file_path(verilog_files, verilog_files_dir, args.file_location)
     # Writ files
     with tarfile.open(args.outputs, "w:gz") as tar:
         for verilog_file in verilog_files_include_dats:

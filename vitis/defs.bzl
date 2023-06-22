@@ -78,6 +78,9 @@ def _vitis_generate_impl(ctx):
     args.append(ctx.file.xilinx_env.path)
     args.append("--top_func")
     args.append(ctx.attr.top_func)
+    if ctx.attr.file_location:
+        args.append("--file_location")
+        args.append(ctx.attr.file_location)
 
     if ctx.attr.use_vivado_hls:
         args.append("--use_vivado_hls")
@@ -110,6 +113,7 @@ vitis_generate = rule(
         "deps": attr.label_list(doc = "The file to generate from", aspects = [vitis_hls_files_aspect], mandatory = True),
         "out": attr.output(doc = "The generated verilog files", mandatory = True),
         "use_vivado_hls": attr.bool(doc = "Use vivado HLS instead of vitis hls.", default = False),
+        "file_location": attr.string(doc = "The file location relative to the WORKSPACE", mandatory = False),
         "_vitis_generate_template": attr.label(
             doc = "The tcl template to run with vitis.",
             default = "@rules_hdl//vitis:vitis_generate.tcl.template",
