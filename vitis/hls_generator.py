@@ -82,7 +82,7 @@ def send_command(command):
 
 
 def replace_module_names(verilog_files, verilog_files_dir, top_name):
-    module_pattern = re.compile(r"(?<=^module\s)[^\s(\n]+\b", re.IGNORECASE)
+    module_pattern = re.compile(r"(?<=\bmodule\s)[^\s(\n]+\b", re.IGNORECASE)
     module_names_to_change = []
     data_to_write = {}
     # Read files and find module names.
@@ -101,10 +101,11 @@ def replace_module_names(verilog_files, verilog_files_dir, top_name):
         this_data = data_to_write[full_path]
         for i in range(len(this_data)):
             for module_name_to_change in module_names_to_change:
-                # TODO(cruxml-bopeng): Fix dat file path.
                 this_data[i] = re.sub(
-                    r"\b{module_name}\b".format(module_name=module_name_to_change),
-                    f"{module_name_to_change}_{top_name}",
+                    r"(\b{module_name}\b(?![.]))".format(
+                        module_name=module_name_to_change
+                    ),
+                    f" {module_name_to_change}_{top_name} ",
                     this_data[i],
                 )
     for verilog_file in verilog_files:
