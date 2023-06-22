@@ -76,6 +76,9 @@ def _vitis_generate_impl(ctx):
     args.append(ctx.label.name)
     args.append("--xilinx_env")
     args.append(ctx.file.xilinx_env.path)
+    args.append("--top_func")
+    args.append(ctx.attr.top_func)
+
     if ctx.attr.use_vivado_hls:
         args.append("--use_vivado_hls")
 
