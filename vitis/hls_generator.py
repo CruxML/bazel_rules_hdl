@@ -94,7 +94,6 @@ def replace_module_names(verilog_files, verilog_files_dir, top_name):
                 module_name = module_pattern.findall(line)
                 # Keep the top level name.
                 if module_name and module_name[0] != top_name:
-                    print(module_name)
                     module_names_to_change += module_name
     # replace file contents
     for verilog_file in verilog_files:
