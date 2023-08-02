@@ -41,6 +41,8 @@ OpenRoadPdkInfo = provider(
         "tapcell_tcl": "TCL file that sets tapcell options. This overrides other tapcell attributes in this rule.",
         "placement_padding_tcl": "TCL Script for handling the placement padding of cells",
         "detailed_routing_configuration": "optional detailed routing configuration",
+        "density_fill_config": "optional path to file with metal fill configuration",
+        "klayout_tech_file": "KLayout technology file for GDS write",
     },
 )
 
@@ -76,6 +78,8 @@ def _open_road_pdk_configuration_impl(ctx):
             tapcell_tcl = ctx.file.tapcell_tcl,
             placement_padding_tcl = ctx.file.placement_padding_tcl,
             detailed_routing_configuration = ctx.attr.detailed_routing_configuration,
+            density_fill_config = ctx.attr.density_fill_config,
+            klayout_tech_file = ctx.attr.klayout_tech_file,
         ),
     ]
 
@@ -106,6 +110,8 @@ open_road_pdk_configuration = rule(
         "tapcell_tcl": attr.label(allow_single_file = True, doc = "TCL file that sets tapcell options. This overrides other tapcell attributes in this rule."),
         "placement_padding_tcl": attr.label(allow_single_file = True, doc = "TCL Script for handling the placement padding of cells"),
         "detailed_routing_configuration": attr.label(providers = [DetailedRoutingInfo]),
+        "density_fill_config": attr.label(allow_single_file = True),
+        "klayout_tech_file": attr.label(mandatory = True, allow_single_file = True),
     },
 )
 

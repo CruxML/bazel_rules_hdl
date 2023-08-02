@@ -1,4 +1,4 @@
-# Copyright 2022 Google LLC
+# Copyright 2023 Antmicro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,9 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-exports_files([
-    "tracks.tcl",
-    "rc_script.tcl",
-    "pdn_config.pdn",
-    "asap7.lyt", # Imported from OpenROAD-flow-scripts on 24.07.2023 at 6ec980e1d49a1a8dcdd1e25ed81255b4bb8285c8 from: https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts/blob/6ec980e1d49a1a8dcdd1e25ed81255b4bb8285c8/flow/platforms/asap7/KLayout/asap7.lyt
-])
+py_binary(
+    name = "cocotb_wrapper",
+    srcs = ["cocotb_wrapper.py"],
+    python_version = "PY3",
+    srcs_version = "PY3",
+    visibility = ["//visibility:public"],
+    deps = [],
+)
