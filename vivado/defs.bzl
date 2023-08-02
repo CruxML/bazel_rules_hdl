@@ -188,7 +188,7 @@ def create_and_synth(
 
     return run_tcl_template(
         ctx,
-        ctx.file._create_project_tcl_template,
+        ctx.file.create_project_tcl_template,
         substitutions,
         ctx.file.xilinx_env,
         all_files + ip_block_dirs,
@@ -326,7 +326,7 @@ def _vivado_synthesis_optimize_impl(ctx):
 
     default_info = run_tcl_template(
         ctx,
-        ctx.file._synthesis_optimize_template,
+        ctx.file.synthesis_optimize_template,
         substitutions,
         ctx.file.xilinx_env,
         [checkpoint_in],
@@ -392,7 +392,7 @@ def _vivado_placement_impl(ctx):
 
     default_info = run_tcl_template(
         ctx,
-        ctx.file._placement_template,
+        ctx.file.placement_template,
         substitutions,
         ctx.file.xilinx_env,
         [checkpoint_in],
@@ -458,7 +458,7 @@ def _vivado_place_optimize_impl(ctx):
 
     default_info = run_tcl_template(
         ctx,
-        ctx.file._place_optimize_template,
+        ctx.file.place_optimize_template,
         substitutions,
         ctx.file.xilinx_env,
         [checkpoint_in],
@@ -540,7 +540,7 @@ def _vivado_routing_impl(ctx):
 
     default_info = run_tcl_template(
         ctx,
-        ctx.file._route_template,
+        ctx.file.route_template,
         substitutions,
         ctx.file.xilinx_env,
         [checkpoint_in],
@@ -601,7 +601,7 @@ def _vivado_write_bitstream_impl(ctx):
 
     default_info = run_tcl_template(
         ctx,
-        ctx.file._write_bitstream_template,
+        ctx.file.write_bitstream_template,
         substitutions,
         ctx.file.xilinx_env,
         [checkpoint_in],
@@ -722,7 +722,7 @@ def _xsim_test_impl(ctx):
 
     _, vivado_log, vivado_journal = run_tcl_template(
         ctx,
-        ctx.file._xsim_test_template,
+        ctx.file.xsim_test_template,
         substitutions,
         ctx.file.xilinx_env,
         all_files,
@@ -843,7 +843,7 @@ def _vivado_create_ip_impl(ctx):
         encrypt_content, encrypted_files, post_processing_command = generate_encrypt_tcl(
             ctx,
             all_files,
-            ctx.file._keyfile.path,
+            ctx.file.keyfile.path,
             ip_src_dir,
         )
         outputs += encrypted_files
@@ -866,10 +866,10 @@ def _vivado_create_ip_impl(ctx):
 
     ip_block_outputs = run_tcl_template(
         ctx,
-        ctx.file._create_ip_block_template,
+        ctx.file.create_ip_block_template,
         substitutions,
         ctx.file.xilinx_env,
-        all_files + [ctx.file._keyfile],
+        all_files + [ctx.file.keyfile],
         outputs,
         post_processing_command,
     )
