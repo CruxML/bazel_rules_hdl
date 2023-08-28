@@ -44,7 +44,7 @@ def _vitis_generate_impl(ctx):
             external_path = "/".join([file.root.path, file.owner.workspace_root]) if file.root.path else file.owner.workspace_root
             if external_path == "":
               continue
-            external_paths.add(external_path)
+            external_paths[external_path] = True
 
     for external_path in external_paths:
         cflags += " -I" + external_path
