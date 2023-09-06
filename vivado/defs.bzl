@@ -593,7 +593,7 @@ def _vivado_write_bitstream_impl(ctx):
 
     outputs = [bitstream]
 
-    if ctx.with_xsa:
+    if ctx.attr.with_xsa:
         with_xsa_str = "1"
         xsa_out = ctx.actions.declare_file("{}.xsa".format(ctx.label.name))
         xsa_path = xsa_out.path
@@ -664,6 +664,7 @@ def vivado_flow(name, module, module_top, part_number, xilinx_env, tags = [], ip
         xilinx_env: The shell script to setup the Xilinx/vivado environment.
         tags: Optional tags to use for the rules.
         ip_blocks: Optional ip blocks to include in a design.
+        with_xsa: Also generate the xsa file.
     """
     vivado_synthesize(
         name = "{}_synth".format(name),
