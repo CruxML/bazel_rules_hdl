@@ -438,7 +438,7 @@ vivado_placement = rule(
     ],
 )
 
-def _vivado_place_optimi    outputs = [bitstream]ze_impl(ctx):
+def _vivado_place_optimize_impl(ctx):
     placement_checkpoint = ctx.actions.declare_file("{}.dcp".format(ctx.label.name))
     timing_summary_report = ctx.actions.declare_file("{}_timing.rpt".format(ctx.label.name))
     util_report = ctx.actions.declare_file("{}_util.rpt".format(ctx.label.name))
@@ -653,7 +653,7 @@ vivado_write_bitstream = rule(
     ],
 )
 
-def vivado_flow(name, module, module_top, part_number, xilinx_env, tags = [], ip_blocks = []):
+def vivado_flow(name, module, module_top, part_number, xilinx_env, tags = [], ip_blocks = [], with_xsa=False):
     """Runs the entire bitstream flow as a convenience macro.
 
     Args:
@@ -708,6 +708,7 @@ def vivado_flow(name, module, module_top, part_number, xilinx_env, tags = [], ip
         checkpoint = "{}_route".format(name),
         xilinx_env = xilinx_env,
         tags = tags,
+        with_xsa = with_xsa,
     )
 
 def _xsim_test_impl(ctx):
