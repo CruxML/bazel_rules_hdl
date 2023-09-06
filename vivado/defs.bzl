@@ -653,7 +653,7 @@ vivado_write_bitstream = rule(
     ],
 )
 
-def vivado_flow(name, module, module_top, part_number, xilinx_env, tags = [], ip_blocks = []):
+def vivado_flow(name, module, module_top, part_number, xilinx_env, tags = [], ip_blocks = [], with_xsa=False):
     """Runs the entire bitstream flow as a convenience macro.
 
     Args:
@@ -708,6 +708,7 @@ def vivado_flow(name, module, module_top, part_number, xilinx_env, tags = [], ip
         checkpoint = "{}_route".format(name),
         xilinx_env = xilinx_env,
         tags = tags,
+        with_xsa = with_xsa,
     )
 
 def _xsim_test_impl(ctx):
