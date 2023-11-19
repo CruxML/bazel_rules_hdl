@@ -17,6 +17,7 @@
 load("@rules_hdl//pdk:open_road_configuration.bzl", "assert_has_open_road_configuration")
 load("//place_and_route:private/clock_tree_synthesis.bzl", "clock_tree_synthesis")
 load("//place_and_route:private/detailed_routing.bzl", "detailed_routing")
+load("//place_and_route:private/export_def.bzl", "export_def")
 load("//place_and_route:private/floorplan.bzl", "init_floor_plan")
 load("//place_and_route:private/global_placement.bzl", "global_placement")
 load("//place_and_route:private/global_routing.bzl", "global_routing")
@@ -32,16 +33,21 @@ def _place_and_route_impl(ctx):
     output_files = []
 
     open_road_provider = init_floor_plan(ctx)
+    open_road_provider, output_def = export_def(ctx, open_road_provider, "pre_pnr")
+    output_files.append(output_def)
     open_road_provider = place_pins(ctx, open_road_provider)
     open_road_provider = pdn_gen(ctx, open_road_provider)
     open_road_provider = global_placement(ctx, open_road_provider)
+    open_road_provider, output_def = export_def(ctx, open_road_provider, "global_placement")
+    output_files.append(output_def)
     open_road_provider = resize(ctx, open_road_provider)
     open_road_provider = clock_tree_synthesis(ctx, open_road_provider)
     open_road_provider = global_routing(ctx, open_road_provider)
     if not ctx.attr.skip_detailed_routing:
         open_road_provider = detailed_routing(ctx, open_road_provider)
         output_files.append(open_road_provider.routed_def)
-
+    open_road_provider, output_def = export_def(ctx, open_road_provider, "post_pnr")
+    output_files.append(output_def)
     output_files.append(open_road_provider.output_db)
     output_files.extend(open_road_provider.logs.to_list())
 
@@ -88,6 +94,7 @@ place_and_route = rule(
           """,
         ),
         "sdc": attr.label(allow_single_file = True),
+        "pin_placement_script": attr.label(allow_single_file = [".tcl"], doc = "See https://openroad.readthedocs.io/en/latest/main/src/ppl/README.html for syntax"),
         "clocks": attr.string_dict(),
         "die_width_microns": attr.int(),
         "die_height_microns": attr.int(),
@@ -95,5 +102,8 @@ place_and_route = rule(
         "target_die_utilization_percentage": attr.string(doc = "string float value from 0-100 which sets the die area based on an estimated die area target utilization"),
         "placement_density": attr.string(default = "0.69", doc = "When performing global placement this is how densely our cells should be packaged on the die parameter is (0-1]"),
         "density_fill_config": attr.label(allow_single_file = True),
+        "sink_clustering_size": attr.int(doc = "Clock tree synthesis sink group size"),
+        "sink_clustering_max_diameter": attr.int(doc = "Clock tree synthesis sink group desired diamater in microns"),
+        "min_pin_distance": attr.string(doc = "The minimum distance in microns between pins around the outside of the block."),
     },
 )

@@ -16,6 +16,7 @@ timeout: 10800s
 options:
   machineType: 'N1_HIGHCPU_32'
   diskSizeGb: 100
+  logStreamingOption: STREAM_ON
 logsBucket: 'gs://bazel_rules_hdl'
 
 steps:
@@ -33,7 +34,7 @@ steps:
     path: /root/.ssh
 
 # Run the build
-- name: gcr.io/cloud-builders/bazel@sha256:4d94007baccd0cc0d3552b3ad3daae9ed3626c924a8c6ae88c70a58dcd08639e
+- name: gcr.io/cloud-builders/bazel
   entrypoint: 'bash'
   args:
   - '-c'

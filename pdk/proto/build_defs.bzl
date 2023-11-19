@@ -9,15 +9,24 @@ def _extract_lef_and_liberty_impl(ctx):
     content = []
     out_files = []
 
-    for file in standard_cell.cell_lef_definitions:
-        content.append("cell_lef_paths: \"{}\"".format(file.short_path))
-    out_files.extend(standard_cell.cell_lef_definitions)
+    manual_override = ctx.attr.cell_lef_paths or ctx.attr.tech_lef_path or ctx.attr.liberty_path
 
-    content.append("tech_lef_path: \"{}\"".format(standard_cell.tech_lef.short_path))
-    out_files.append(standard_cell.tech_lef)
+    if not manual_override:
+        for file in standard_cell.cell_lef_definitions:
+            content.append("cell_lef_paths: \"{}\"".format(file.short_path))
+        out_files.extend(standard_cell.cell_lef_definitions)
 
-    content.append("liberty_path: \"{}\"".format(standard_cell.default_corner.liberty.short_path))
-    out_files.append(standard_cell.default_corner.liberty)
+        content.append("tech_lef_path: \"{}\"".format(standard_cell.tech_lef.short_path))
+        out_files.append(standard_cell.tech_lef)
+
+        content.append("liberty_path: \"{}\"".format(standard_cell.default_corner.liberty.short_path))
+        out_files.append(standard_cell.default_corner.liberty)
+    else:
+        for file in ctx.attr.cell_lef_paths:
+            content.append("cell_lef_paths: \"{}\"".format(file))
+
+        content.append("tech_lef_path: \"{}\"".format(ctx.attr.tech_lef_path))
+        content.append("liberty_path: \"{}\"".format(ctx.attr.liberty_path))
 
     content.append("tracks_file_path: \"{}\"".format(
         open_road_configuration.tracks_file.short_path,
@@ -121,5 +130,8 @@ extract_lef_and_liberty = rule(
     implementation = _extract_lef_and_liberty_impl,
     attrs = {
         "standard_cell": attr.label(providers = [StandardCellInfo]),
+        "cell_lef_paths": attr.string_list(),
+        "tech_lef_path": attr.string(),
+        "liberty_path": attr.string(),
     },
 )

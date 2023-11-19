@@ -28,7 +28,7 @@ set_voltage_domain -name {CORE} -power {VDD} -ground {VSS}
 ####################################
 # standard cell grid
 ####################################
-# ASAP7 in its default configuration is multipled by 
+# ASAP7 in its default configuration is multipled by
 # 4x looking to fix this upstream.
 set multipler 4.0
 
