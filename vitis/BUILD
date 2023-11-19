@@ -6,6 +6,8 @@ cc_library(
     name = "v2021_2_cc",
     srcs = glob([
         "v2021_2/**/*.h",
+    ]) + glob([
+        "v2021_2/**/*.cpp",
     ]),
     strip_include_prefix = "external/rules_hdl/",
     visibility = ["//visibility:public"],
