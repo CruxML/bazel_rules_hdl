@@ -29,7 +29,7 @@
  *
  *****************************************************************************/
 
-#include <ap_fixed.h>
+#include "ap_fixed.h"
 #include "hls_log_apfixed.h"
 
 namespace log_apfixed_reduce {
