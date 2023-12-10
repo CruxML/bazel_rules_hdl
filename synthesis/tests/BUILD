@@ -20,6 +20,11 @@ load("//static_timing:build_defs.bzl", "run_opensta")
 load("//synthesis:build_defs.bzl", "synthesize_rtl")
 load("//verilog:providers.bzl", "verilog_library")
 
+package(
+    default_applicable_licenses = ["//:package_license"],
+    default_visibility = ["//visibility:private"],
+)
+
 synthesize_rtl(
     name = "verilog_adder_synthesized",
     top_module = "adder",
@@ -140,15 +145,16 @@ asap7_targets(
 
 # ASAP7 7.5 track rev 27 4x scaled version
 # FIXME: Enable the 4x scaled 7.5 track config.
-#asap7_targets(
-#    name = "verilog_counter-asap7-sc7p5t_rev27_rvt_4x",
-#    size = 2000,
-#    has_gds = False,  # No GDS for the 4x cells
-#    rev = 27,
-#    target = "verilog_counter",
-#    tracks = "7p5t",
-#    vt = "rvt_4x",
-#)
+asap7_targets(
+    name = "verilog_counter-asap7-sc7p5t_rev27_rvt_4x",
+    size = 2000,
+    corners = ["ccs_ss"],
+    has_gds = False,  # No GDS for the 4x cells
+    rev = 27,
+    target = "verilog_counter",
+    tracks = "7p5t",
+    vt = "rvt_4x",
+)
 
 # ASAP7 6 track rev 26
 # FIXME: Enable the 6 track config.

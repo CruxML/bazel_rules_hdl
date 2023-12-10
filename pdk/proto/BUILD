@@ -1,4 +1,4 @@
-# Copyright 2021 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,11 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@rules_cc//cc:defs.bzl", "cc_proto_library")
+load("@rules_python//python:proto.bzl", "py_proto_library")
+
 package(
     default_applicable_licenses = ["//:package_license"],
-    default_visibility = ["//visibility:private"],
+    default_visibility = ["//visibility:public"],
 )
 
 exports_files([
-    "swigconfig.h",
+    "build_defs.bzl",
+    "pdk_info.proto",
 ])
+
+proto_library(
+    name = "pdk_info_proto",
+    srcs = ["pdk_info.proto"],
+)
+
+cc_proto_library(
+    name = "pdk_info_cc_proto",
+    deps = [":pdk_info_proto"],
+)
+
+py_proto_library(
+    name = "pdk_info_py_proto",
+    deps = [":pdk_info_proto"],
+)

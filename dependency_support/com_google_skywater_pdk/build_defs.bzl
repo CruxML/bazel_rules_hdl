@@ -86,7 +86,10 @@ def _skywater_cell_library_impl(ctx):
         default_lib_depset = [default_corner.liberty]
 
     return [
-        DefaultInfo(files = depset(default_lib_depset)),
+        DefaultInfo(
+            files = depset(default_lib_depset),
+            runfiles = ctx.runfiles(default_lib_depset),
+        ),
         StandardCellInfo(
             corners = corners,
             default_corner = default_corner,
@@ -128,7 +131,7 @@ skywater_corner = rule(
         ),
         "with_ccsnoise": attr.bool(
             default = False,
-            doc = "Wheter to generate ccsnoise.",
+            doc = "Whether to generate ccsnoise.",
         ),
         "standard_cell_name": attr.string(
             mandatory = True,
@@ -136,7 +139,7 @@ skywater_corner = rule(
         ),
         "with_leakage": attr.bool(
             default = False,
-            doc = "Wheter to generate leakage",
+            doc = "Whether to generate leakage",
         ),
         "_liberty_tool": attr.label(
             default = Label("@com_google_skywater_pdk//:liberty"),

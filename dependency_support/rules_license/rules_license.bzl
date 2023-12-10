@@ -1,4 +1,4 @@
-# Copyright 2020 Google LLC
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,20 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Loads the bz2lib library, used by iverilog."""
+"""Loads the bazel-skylib utility library"""
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 
-def org_sourceware_bzip2():
+def rules_license():
     maybe(
         http_archive,
-        name = "org_sourceware_bzip2",
+        name = "rules_license",
         urls = [
-            "https://mirrors.kernel.org/sourceware/bzip2/bzip2-1.0.8.tar.gz",
-            "https://sourceware.org/pub/bzip2/bzip2-1.0.8.tar.gz",
+            "https://github.com/bazelbuild/rules_license/releases/download/0.0.4/rules_license-0.0.4.tar.gz",
+            "https://mirror.bazel.build/github.com/bazelbuild/rules_license/releases/download/0.0.4/rules_license-0.0.4.tar.gz",
         ],
-        strip_prefix = "bzip2-1.0.8",
-        sha256 = "ab5a03176ee106d3f0fa90e381da478ddae405918153cca248e682cd0c4a2269",
-        build_file = Label("@rules_hdl//dependency_support:org_sourceware_bzip2/bundled.BUILD.bazel"),
+        sha256 = "6157e1e68378532d0241ecd15d3c45f6e5cfd98fc10846045509fb2a7cc9e381",
     )
