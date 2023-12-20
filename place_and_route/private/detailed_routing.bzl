@@ -55,8 +55,10 @@ def detailed_routing(ctx, open_road_info):
         if detailed_routing_configs.enable_via_gen:
             detailed_routing_args += " -disable_via_gen "
 
-    open_road_commands = timing_setup_command_struct.commands
-    open_road_commands.append("detailed_route -output_drc {} {}".format(output_drc.path, detailed_routing_args))
+    open_road_commands = timing_setup_command_struct.commands + [
+        "set_propagated_clock [all_clocks]",
+        "detailed_route -output_drc {} {}".format(output_drc.path, detailed_routing_args)
+    ]
     density_fill_config = None
     if open_road_configuration.density_fill_config:
         density_fill_config = open_road_configuration.density_fill_config.files.to_list()[0]
@@ -74,6 +76,24 @@ def detailed_routing(ctx, open_road_info):
                                   "\n}")
         open_road_commands.append("density_fill -rules {}".format(density_fill_config.path))
         inputs.append(density_fill_config)
+
+    open_road_commands.append("puts \"report_checks -path_delay min_max -format full_clock_expanded -fields {input_pin slew capacitance} -digits 3\"")
+    open_road_commands.append("report_checks -path_delay min_max -format full_clock_expanded -fields {input_pin slew capacitance} -digits 3")
+
+    open_road_commands.append("puts \"report_wns\"")
+    open_road_commands.append("report_wns")
+
+    open_road_commands.append("puts \"report_tns\"")
+    open_road_commands.append("report_tns")
+
+    open_road_commands.append("puts \"report_check_types -max_slew -max_capacitance -max_fanout -violators\"")
+    open_road_commands.append("report_check_types -max_slew -max_capacitance -max_fanout -violators")
+
+    open_road_commands.append("puts \"report_floating_nets -verbose\"")
+    open_road_commands.append("report_floating_nets -verbose")
+
+    open_road_commands.append("puts \"report_units\"")
+    open_road_commands.append("report_units")
     open_road_commands.append("write_def {}".format(routed_def.path))
 
     execution_requirements = {}
